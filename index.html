@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau Data Grid Extension</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+        
+        .status {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            margin: 0;
+            color: #495057;
+            font-weight: 500;
+        }
+        
+        .status.loading {
+            border-color: #ffc107;
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status.success {
+            border-color: #28a745;
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .grid-container {
+            padding: 20px;
+            overflow-x: auto;
+            max-height: 70vh;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .data-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .data-table th {
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .data-table th:last-child {
+            border-right: none;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            border-right: 1px solid #e9ecef;
+            transition: background-color 0.2s ease;
+        }
+        
+        .data-table td:last-child {
+            border-right: none;
+        }
+        
+        .data-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: #e3f2fd;
+            cursor: pointer;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        
+        .worksheet-selector {
+            padding: 15px 20px;
+            background: #fff;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .worksheet-selector select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.2s ease;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .instructions {
+            background: #e7f3ff;
+            border: 2px solid #0066cc;
+            color: #004499;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Tableau Data Grid</h1>
+            <p>Interactive data visualization extension</p>
+        </div>
+        
+        <div class="instructions">
+            <h3>🚀 Extension Ready!</h3>
+            <p>This is your working Tableau extension. Save this HTML file and create a .trex manifest to deploy.</p>
+        </div>
+        
+        <div id="status" class="status loading">
+            <span class="loading-spinner"></span>
+            Initializing extension...
+        </div>
+        
+        <div id="worksheet-selector" class="worksheet-selector" style="display: none;">
+            <label for="worksheetSelect" style="display: block; margin-bottom: 8px; font-weight: 600; color: #495057;">
+                Select Worksheet:
+            </label>
+            <select id="worksheetSelect">
+                <option value="">Choose a worksheet...</option>
+            </select>
+        </div>
+        
+        <div id="grid-container" class="grid-container">
+            <div class="empty-state">
+                <h3>Ready to Load Data</h3>
+                <p>Connect to Tableau to view your data</p>
+            </div>
+        </div>
+        
+        <div id="stats" class="stats" style="display: none;">
+            <span id="row-count">0 rows</span>
+            <span id="column-count">0 columns</span>
+        </div>
+    </div>
+
+    <script src="https://public.tableau.com/javascripts/api/tableau.extensions.1.latest.min.js"></script>
+    <script>
+        class TableauDataGrid {
+            constructor() {
+                this.currentWorksheet = null;
+                this.data = [];
+                this.columns = [];
+                this.init();
+            }
+
+            async init() {
+                this.updateStatus('loading', 'Loading Tableau Extensions API...');
+                
+                try {
+                    // Wait for tableau object to be available
+                    await this.waitForTableau();
+                    
+                    // Initialize Tableau
+                    await tableau.extensions.initializeAsync();
+                    this.updateStatus('success', 'Connected to Tableau successfully!');
+                    this.loadWorksheets();
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    this.updateStatus('error', 'Extension ready for deployment - showing sample data');
+                    this.showSampleData();
+                }
+            }
+
+            waitForTableau() {
+                return new Promise(function(resolve, reject) {
+                    var attempts = 0;
+                    var maxAttempts = 20;
+                    
+                    function check() {
+                        attempts++;
+                        if (typeof tableau !== 'undefined' && tableau.extensions) {
+                            resolve();
+                        } else if (attempts >= maxAttempts) {
+                            reject(new Error('Tableau API not available'));
+                        } else {
+                            setTimeout(check, 500);
+                        }
+                    }
+                    
+                    check();
+                });
+            }
+
+            updateStatus(type, message) {
+                var statusEl = document.getElementById('status');
+                statusEl.className = 'status ' + type;
+                var spinner = type === 'loading' ? '<span class="loading-spinner"></span>' : '';
+                statusEl.innerHTML = spinner + message;
+            }
+
+            loadWorksheets() {
+                var worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
+                var selector = document.getElementById('worksheet-selector');
+                var select = document.getElementById('worksheetSelect');
+                
+                if (worksheets.length === 0) {
+                    this.updateStatus('error', 'No worksheets found in this dashboard');
+                    return;
+                }
+
+                // Clear and populate selector
+                select.innerHTML = '<option value="">Choose a worksheet...</option>';
+                for (var i = 0; i < worksheets.length; i++) {
+                    var option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = worksheets[i].name;
+                    select.appendChild(option);
+                }
+
+                selector.style.display = 'block';
+                
+                // Auto-select first worksheet if only one
+                if (worksheets.length === 1) {
+                    select.value = '0';
+                    this.selectWorksheet(0);
+                }
+
+                // Add change listener
+                var self = this;
+                select.addEventListener('change', function(e) {
+                    if (e.target.value !== '') {
+                        self.selectWorksheet(parseInt(e.target.value));
+                    }
+                });
+            }
+
+            async selectWorksheet(index) {
+                try {
+                    var worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
+                    this.currentWorksheet = worksheets[index];
+                    
+                    this.updateStatus('loading', 'Loading data from "' + this.currentWorksheet.name + '"...');
+                    await this.loadData();
+                } catch (error) {
+                    console.error('Worksheet selection error:', error);
+                    this.updateStatus('error', 'Error loading worksheet: ' + error.message);
+                }
+            }
+
+            async loadData() {
+                try {
+                    var dataTable = await this.currentWorksheet.getSummaryDataAsync({ 
+                        maxRows: 1000,
+                        includeDataValues: true 
+                    });
+                    
+                    this.columns = [];
+                    for (var i = 0; i < dataTable.columns.length; i++) {
+                        this.columns.push({
+                            name: dataTable.columns[i].fieldName,
+                            dataType: dataTable.columns[i].dataType
+                        });
+                    }
+                    
+                    this.data = [];
+                    for (var i = 0; i < dataTable.data.length; i++) {
+                        var row = [];
+                        for (var j = 0; j < dataTable.data[i].length; j++) {
+                            var cell = dataTable.data[i][j];
+                            row.push(cell.formattedValue || cell.value || '');
+                        }
+                        this.data.push(row);
+                    }
+                    
+                    this.renderTable();
+                    this.updateStats();
+                    this.updateStatus('success', 'Loaded ' + this.data.length + ' rows from "' + this.currentWorksheet.name + '"');
+                    
+                } catch (error) {
+                    console.error('Data loading error:', error);
+                    this.updateStatus('error', 'Error loading data: ' + error.message);
+                }
+            }
+
+            renderTable() {
+                var container = document.getElementById('grid-container');
+                
+                if (this.data.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><h3>No Data Available</h3><p>The selected worksheet contains no data</p></div>';
+                    return;
+                }
+
+                var html = '<table class="data-table"><thead><tr>';
+                
+                // Create headers
+                for (var i = 0; i < this.columns.length; i++) {
+                    html += '<th title="Type: ' + this.columns[i].dataType + '">' + this.columns[i].name + '</th>';
+                }
+                html += '</tr></thead><tbody>';
+                
+                // Create rows
+                for (var i = 0; i < this.data.length; i++) {
+                    html += '<tr data-row="' + i + '">';
+                    for (var j = 0; j < this.data[i].length; j++) {
+                        var cellValue = this.data[i][j] === null || this.data[i][j] === undefined ? '' : String(this.data[i][j]);
+                        html += '<td title="' + cellValue + '">' + cellValue + '</td>';
+                    }
+                    html += '</tr>';
+                }
+                
+                html += '</tbody></table>';
+                container.innerHTML = html;
+
+                // Add click handlers
+                var self = this;
+                var rows = container.querySelectorAll('tr[data-row]');
+                for (var i = 0; i < rows.length; i++) {
+                    rows[i].addEventListener('click', function() {
+                        var allRows = container.querySelectorAll('tr[data-row]');
+                        for (var j = 0; j < allRows.length; j++) {
+                            allRows[j].style.backgroundColor = '';
+                        }
+                        this.style.backgroundColor = '#bbdefb';
+                    });
+                }
+            }
+
+            updateStats() {
+                var statsEl = document.getElementById('stats');
+                var rowCountEl = document.getElementById('row-count');
+                var columnCountEl = document.getElementById('column-count');
+                
+                rowCountEl.textContent = this.data.length.toLocaleString() + ' rows';
+                columnCountEl.textContent = this.columns.length + ' columns';
+                
+                statsEl.style.display = 'flex';
+            }
+
+            showSampleData() {
+                // Show sample data for preview
+                this.columns = [
+                    { name: 'Region', dataType: 'string' },
+                    { name: 'Sales', dataType: 'float' },
+                    { name: 'Profit', dataType: 'float' },
+                    { name: 'Date', dataType: 'date' }
+                ];
+                
+                this.data = [
+                    ['North America', '$125,000', '$25,000', '2024-01-15'],
+                    ['Europe', '$87,500', '$17,500', '2024-01-15'],
+                    ['Asia Pacific', '$156,250', '$31,250', '2024-01-15'],
+                    ['Latin America', '$93,750', '$18,750', '2024-01-15']
+                ];
+                
+                this.renderTable();
+                this.updateStats();
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            new TableauDataGrid();
+        });
+    </script>
+</body>
+</html>
