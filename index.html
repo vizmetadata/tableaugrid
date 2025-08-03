@@ -2,535 +2,297 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Enterprise Data Grid</title>
+    <title>Tableau Extensions Diagnostic</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            background: white; 
-            border-radius: 12px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            overflow: hidden;
-        }
-        .header { 
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
-            color: white; 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
             padding: 20px; 
-            text-align: center; 
+            background: #f5f5f5; 
         }
-        .header h1 { font-size: 2rem; font-weight: 600; margin-bottom: 10px; }
-        .toolbar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 15px 20px; 
-            background: #f8f9fa; 
-            border-bottom: 1px solid #dee2e6; 
+        .diagnostic { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .controls { display: flex; gap: 15px; align-items: center; }
-        .control-group { display: flex; flex-direction: column; gap: 5px; }
-        .control-group label { font-size: 12px; font-weight: 600; color: #495057; }
-        .control-group select, .control-group input { 
-            padding: 6px 10px; 
-            border: 1px solid #ced4da; 
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
             border-radius: 4px; 
-            font-size: 13px; 
+            font-weight: bold; 
+        }
+        .pass { background: #d4edda; color: #155724; }
+        .fail { background: #f8d7da; color: #721c24; }
+        .info { background: #e3f2fd; color: #1976d2; }
+        .warning { background: #fff3cd; color: #856404; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 4px; 
+            overflow-x: auto; 
+            font-size: 12px;
         }
         .btn { 
             background: #007bff; 
             color: white; 
             border: none; 
-            padding: 8px 16px; 
+            padding: 10px 20px; 
             border-radius: 4px; 
             cursor: pointer; 
-            font-size: 13px; 
-            font-weight: 500;
+            margin: 5px;
         }
-        .btn:hover { background: #0056b3; }
-        .btn.secondary { background: #6c757d; }
-        .btn.success { background: #28a745; }
-        .grid-container { 
-            padding: 20px; 
-            overflow-x: auto; 
-            max-height: 70vh; 
-        }
-        .data-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 14px; 
-            background: white; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-        }
-        .data-table thead { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            color: white; 
-        }
-        .data-table th { 
-            padding: 12px; 
-            text-align: left; 
-            font-weight: 600; 
-            cursor: pointer; 
-            user-select: none;
-        }
-        .data-table th:hover { background: rgba(255,255,255,0.1); }
-        .data-table td { 
-            padding: 10px 12px; 
-            border-bottom: 1px solid #e9ecef; 
-            transition: background-color 0.2s; 
-        }
-        .data-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
-        .data-table tbody tr:hover { background-color: #e3f2fd; cursor: pointer; }
-        .data-table tbody tr.selected { background-color: #bbdefb !important; }
-        .stats { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 15px 20px; 
-            background: #f8f9fa; 
-            border-top: 1px solid #dee2e6; 
-            font-size: 14px; 
-            color: #6c757d; 
-        }
-        .pagination { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-        }
-        .file-drop { 
-            border: 2px dashed #dee2e6; 
-            border-radius: 8px; 
-            padding: 40px; 
-            text-align: center; 
-            margin: 20px; 
-            background: #f8f9fa;
-            transition: all 0.3s;
-        }
-        .file-drop.dragover { 
-            border-color: #007bff; 
-            background: #e3f2fd; 
-        }
-        .file-drop:hover { border-color: #007bff; }
-        .upload-area { display: none; }
-        .sample-selector { 
-            padding: 20px; 
-            background: #fff3cd; 
-            border-bottom: 1px solid #ffeaa7; 
-        }
-        .alert { 
-            padding: 15px; 
-            margin: 20px; 
-            border-radius: 8px; 
-            background: #e7f3ff; 
-            border: 1px solid #0066cc; 
-            color: #004499; 
-        }
+        .section { margin: 20px 0; }
+        .critical { border-left: 5px solid #dc3545; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 Enterprise Data Grid</h1>
-            <p>Professional data analysis and visualization platform</p>
+    <div class="diagnostic">
+        <h1>🔬 Tableau Extensions Diagnostic Tool</h1>
+        <p>This tool will identify exactly why Dashboard Extensions aren't working.</p>
+        
+        <div class="section">
+            <button class="btn" onclick="runFullDiagnostic()">🚀 Run Complete Diagnostic</button>
+            <button class="btn" onclick="testTableauAPI()">🔍 Test Tableau API</button>
+            <button class="btn" onclick="checkConfiguration()">⚙️ Check Configuration</button>
         </div>
-
-        <div class="alert">
-            <strong>🔄 Tableau Extension Alternative</strong><br>
-            Since Dashboard Extensions are currently disabled in your Tableau environment, this standalone version provides the same data grid functionality. Upload your data files or use the sample datasets below.
-        </div>
-
-        <div class="sample-selector">
-            <label style="font-weight: 600; margin-bottom: 10px; display: block;">📋 Quick Start - Sample Datasets:</label>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <button class="btn" onclick="loadSampleData('sales')">🏢 Sales Performance</button>
-                <button class="btn" onclick="loadSampleData('customers')">👥 Customer Analytics</button>
-                <button class="btn" onclick="loadSampleData('financial')">💰 Financial Data</button>
-                <button class="btn" onclick="loadSampleData('regional')">🌍 Regional Analysis</button>
-            </div>
-        </div>
-
-        <div class="toolbar">
-            <div class="controls">
-                <div class="control-group">
-                    <label>Data Source</label>
-                    <select id="datasetSelect">
-                        <option value="">Select a dataset...</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label>Rows per Page</label>
-                    <select id="rowsPerPage">
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="250">250</option>
-                    </select>
-                </div>
-                <div class="control-group">
-                    <label>Search</label>
-                    <input type="text" id="searchInput" placeholder="Filter data..." style="width: 200px;">
-                </div>
-            </div>
-            <div class="controls">
-                <button class="btn success" onclick="document.getElementById('fileInput').click()">📁 Upload CSV</button>
-                <button class="btn secondary" onclick="exportData()">📥 Export</button>
-            </div>
-        </div>
-
-        <div id="upload-area" class="upload-area">
-            <div class="file-drop" id="fileDrop">
-                <h3>📁 Upload Your Data</h3>
-                <p>Drag & drop a CSV file here or click to browse</p>
-                <input type="file" id="fileInput" accept=".csv" style="display: none;">
-            </div>
-        </div>
-
-        <div class="grid-container">
-            <div id="dataDisplay">
-                <div style="text-align: center; padding: 60px; color: #6c757d;">
-                    <h3>👆 Select a sample dataset above or upload your CSV file</h3>
-                    <p>Professional data grid with sorting, filtering, and export capabilities</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="stats">
-            <div>
-                <span id="totalRows">0 rows</span> • 
-                <span id="totalColumns">0 columns</span> • 
-                <span id="selectedCount">0 selected</span>
-            </div>
-            <div class="pagination">
-                <button class="btn" onclick="previousPage()">← Previous</button>
-                <span id="pageInfo">Page 1 of 1</span>
-                <button class="btn" onclick="nextPage()">Next →</button>
-            </div>
-        </div>
+        
+        <div id="results"></div>
     </div>
 
     <script>
-        // Enterprise-grade data management system
-        class DataGridEngine {
-            constructor() {
-                this.datasets = this.initializeSampleData();
-                this.currentData = [];
-                this.filteredData = [];
-                this.selectedRows = new Set();
-                this.currentPage = 1;
-                this.rowsPerPage = 25;
-                this.sortColumn = null;
-                this.sortDirection = 'asc';
-                this.setupEventListeners();
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        function logSection(title) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.innerHTML = `<h3>${title}</h3>`;
+            results.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function runFullDiagnostic() {
+            clearResults();
+            log('🔬 Starting comprehensive diagnostic...', 'info');
+            
+            // 1. Environment Check
+            logSection('1️⃣ Environment Analysis');
+            checkEnvironment();
+            
+            // 2. URL Analysis
+            logSection('2️⃣ URL Analysis');
+            analyzeURL();
+            
+            // 3. Script Loading Test
+            logSection('3️⃣ Script Loading Test');
+            await testScriptLoading();
+            
+            // 4. Tableau API Test
+            logSection('4️⃣ Tableau API Test');
+            await testTableauAPI();
+            
+            // 5. Configuration Check
+            logSection('5️⃣ Configuration Check');
+            checkConfiguration();
+            
+            // 6. Recommendations
+            logSection('6️⃣ Recommendations');
+            provideRecommendations();
+        }
+
+        function checkEnvironment() {
+            // Check if we're in an iframe
+            const inIframe = window.self !== window.top;
+            if (inIframe) {
+                log('✅ Running in iframe (correct for Tableau)', 'pass');
+            } else {
+                log('❌ Not in iframe (should be in Tableau dashboard)', 'fail');
             }
 
-            initializeSampleData() {
-                return {
-                    sales: {
-                        name: "Sales Performance Q4 2024",
-                        columns: ["Rep ID", "Sales Rep", "Region", "Q4 Revenue", "Q4 Profit", "Growth %", "Target Achievement"],
-                        data: [
-                            ["SR001", "Sarah Johnson", "North America", "$2,547,830", "$509,566", "18.5%", "127%"],
-                            ["SR002", "Michael Chen", "Asia Pacific", "$1,893,720", "$378,744", "22.1%", "142%"],
-                            ["SR003", "Elena Rodriguez", "Europe", "$2,156,450", "$431,290", "15.8%", "118%"],
-                            ["SR004", "David Kim", "Latin America", "$1,672,380", "$334,476", "28.3%", "156%"],
-                            ["SR005", "Amanda Foster", "Middle East", "$1,834,920", "$366,984", "19.7%", "133%"],
-                            ["SR006", "James Wilson", "North America", "$2,289,560", "$457,912", "16.2%", "121%"],
-                            ["SR007", "Priya Patel", "Asia Pacific", "$1,956,780", "$391,356", "24.6%", "148%"],
-                            ["SR008", "Marco Silva", "Europe", "$2,043,670", "$408,734", "17.9%", "125%"],
-                            ["SR009", "Lisa Thompson", "North America", "$2,378,490", "$475,698", "20.4%", "135%"],
-                            ["SR010", "Ahmed Hassan", "Middle East", "$1,745,230", "$349,046", "31.2%", "162%"]
-                        ]
-                    },
-                    customers: {
-                        name: "Customer Analytics Dashboard",
-                        columns: ["Customer ID", "Company Name", "Industry", "Annual Revenue", "Employees", "Country", "Satisfaction"],
-                        data: [
-                            ["CX10001", "TechFlow Systems", "Technology", "$125.8M", "2,840", "United States", "9.2/10"],
-                            ["CX10002", "Global Manufacturing Inc", "Manufacturing", "$89.3M", "5,670", "Germany", "8.8/10"],
-                            ["CX10003", "FinanceCore Solutions", "Financial Services", "$156.7M", "1,230", "United Kingdom", "9.1/10"],
-                            ["CX10004", "Retail Chain Corp", "Retail", "$234.5M", "12,500", "Canada", "8.5/10"],
-                            ["CX10005", "HealthTech Innovations", "Healthcare", "$78.9M", "890", "Australia", "9.4/10"],
-                            ["CX10006", "Energy Dynamics Ltd", "Energy", "$445.2M", "7,800", "Norway", "8.9/10"],
-                            ["CX10007", "EduPlatform Global", "Education", "$23.4M", "450", "Netherlands", "9.0/10"],
-                            ["CX10008", "LogiFlow International", "Logistics", "$167.8M", "3,200", "Singapore", "8.7/10"],
-                            ["CX10009", "BioResearch Institute", "Pharmaceuticals", "$298.6M", "1,890", "Switzerland", "9.3/10"],
-                            ["CX10010", "AgriTech Solutions", "Agriculture", "$45.7M", "780", "Brazil", "8.6/10"]
-                        ]
-                    },
-                    financial: {
-                        name: "Financial Performance Metrics",
-                        columns: ["Quarter", "Revenue", "EBITDA", "Net Income", "Operating Margin", "ROE", "Debt/Equity"],
-                        data: [
-                            ["Q1 2024", "$12.5M", "$3.2M", "$2.1M", "25.6%", "18.4%", "0.32"],
-                            ["Q2 2024", "$14.8M", "$4.1M", "$2.8M", "27.7%", "19.2%", "0.28"],
-                            ["Q3 2024", "$16.2M", "$4.9M", "$3.4M", "30.2%", "21.8%", "0.25"],
-                            ["Q4 2024", "$18.9M", "$6.1M", "$4.2M", "32.3%", "24.1%", "0.22"],
-                            ["Q1 2025E", "$20.1M", "$6.8M", "$4.7M", "33.8%", "25.6%", "0.20"],
-                            ["Q2 2025E", "$22.4M", "$7.9M", "$5.6M", "35.3%", "27.2%", "0.18"]
-                        ]
-                    },
-                    regional: {
-                        name: "Regional Market Analysis",
-                        columns: ["Region", "Market Size", "Growth Rate", "Market Share", "Competition Level", "Opportunity Score"],
-                        data: [
-                            ["North America", "$1.2B", "12.5%", "34%", "High", "8.2/10"],
-                            ["Europe", "$980M", "8.7%", "28%", "Very High", "7.4/10"],
-                            ["Asia Pacific", "$1.8B", "24.3%", "19%", "Medium", "9.1/10"],
-                            ["Latin America", "$340M", "18.9%", "15%", "Low", "8.8/10"],
-                            ["Middle East", "$220M", "16.2%", "22%", "Medium", "7.9/10"],
-                            ["Africa", "$150M", "31.4%", "8%", "Low", "9.3/10"]
-                        ]
-                    }
-                };
+            // Check URL protocol
+            const protocol = window.location.protocol;
+            if (protocol === 'about:') {
+                log('✅ Protocol is "about:" (correct for Tableau)', 'pass');
+            } else if (protocol === 'https:') {
+                log('⚠️ Protocol is HTTPS (browser test, not Tableau)', 'warning');
+            } else {
+                log(`❌ Unexpected protocol: ${protocol}`, 'fail');
             }
 
-            setupEventListeners() {
-                // File upload
-                const fileInput = document.getElementById('fileInput');
-                const fileDrop = document.getElementById('fileDrop');
-
-                fileInput.addEventListener('change', (e) => this.handleFileUpload(e.target.files[0]));
-                
-                fileDrop.addEventListener('click', () => fileInput.click());
-                fileDrop.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    fileDrop.classList.add('dragover');
-                });
-                fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
-                fileDrop.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    fileDrop.classList.remove('dragover');
-                    this.handleFileUpload(e.dataTransfer.files[0]);
-                });
-
-                // Search and controls
-                document.getElementById('searchInput').addEventListener('input', () => this.filterData());
-                document.getElementById('rowsPerPage').addEventListener('change', (e) => {
-                    this.rowsPerPage = parseInt(e.target.value);
-                    this.currentPage = 1;
-                    this.renderCurrentPage();
-                });
-                document.getElementById('datasetSelect').addEventListener('change', (e) => {
-                    if (e.target.value) this.loadDataset(e.target.value);
-                });
+            // Check user agent
+            const userAgent = navigator.userAgent;
+            if (userAgent.includes('Tableau')) {
+                log('✅ Tableau detected in user agent', 'pass');
+            } else {
+                log('⚠️ Tableau not detected in user agent', 'warning');
             }
 
-            loadSampleData(datasetKey) {
-                const dataset = this.datasets[datasetKey];
-                if (!dataset) return;
+            // Check window properties
+            try {
+                const hasParent = window.parent !== window;
+                log(`Parent window accessible: ${hasParent ? 'Yes' : 'No'}`, 'info');
+            } catch (e) {
+                log('❌ Cannot access parent window (security restriction)', 'fail');
+            }
+        }
 
-                this.currentData = dataset.data.map((row, index) => ({ id: index, data: row }));
-                this.filteredData = [...this.currentData];
-                this.selectedRows.clear();
-                this.currentPage = 1;
+        function analyzeURL() {
+            const url = window.location.href;
+            log(`Current URL: ${url}`, 'info');
 
-                // Update dataset selector
-                const selector = document.getElementById('datasetSelect');
-                selector.innerHTML = `<option value="${datasetKey}" selected>${dataset.name}</option>`;
-
-                this.renderTable(dataset.columns);
-                this.updateStats(dataset.name);
+            if (url.includes('about:srcdoc')) {
+                log('✅ URL indicates Tableau sandboxed environment', 'pass');
+            } else if (url.includes('github.io')) {
+                log('⚠️ Running from GitHub (browser test)', 'warning');
+            } else {
+                log('❓ Unexpected URL pattern', 'warning');
             }
 
-            renderTable(columns) {
-                const container = document.getElementById('dataDisplay');
-                const startIndex = (this.currentPage - 1) * this.rowsPerPage;
-                const endIndex = startIndex + this.rowsPerPage;
-                const pageData = this.filteredData.slice(startIndex, endIndex);
+            // Check if URL parameters exist
+            const params = new URLSearchParams(window.location.search);
+            if (params.toString()) {
+                log(`URL parameters: ${params.toString()}`, 'info');
+            } else {
+                log('No URL parameters found', 'info');
+            }
+        }
 
-                let html = '<table class="data-table"><thead><tr>';
-                
-                columns.forEach((col, index) => {
-                    const sortIcon = this.sortColumn === index ? (this.sortDirection === 'asc' ? ' ↑' : ' ↓') : '';
-                    html += `<th onclick="dataGrid.sortTable(${index})">${col}${sortIcon}</th>`;
-                });
-                html += '</tr></thead><tbody>';
+        async function testScriptLoading() {
+            const testUrls = [
+                'https://public.tableau.com/javascripts/api/tableau.extensions.1.latest.min.js',
+                'https://cdn.jsdelivr.net/npm/@tableau/extensions-api@1.12.0/lib/tableau.extensions.1.12.0.min.js'
+            ];
 
-                pageData.forEach(item => {
-                    const isSelected = this.selectedRows.has(item.id);
-                    html += `<tr data-id="${item.id}" class="${isSelected ? 'selected' : ''}" onclick="dataGrid.toggleRowSelection(${item.id})">`;
-                    item.data.forEach(cell => {
-                        html += `<td>${cell}</td>`;
+            for (const url of testUrls) {
+                try {
+                    log(`Testing script load: ${url.split('/').pop()}`, 'info');
+                    
+                    const script = document.createElement('script');
+                    script.src = url;
+                    
+                    const loadPromise = new Promise((resolve, reject) => {
+                        script.onload = () => resolve('loaded');
+                        script.onerror = () => reject('failed');
+                        setTimeout(() => reject('timeout'), 5000);
                     });
-                    html += '</tr>';
-                });
-
-                html += '</tbody></table>';
-                container.innerHTML = html;
-                this.updatePagination();
-            }
-
-            sortTable(columnIndex) {
-                if (this.sortColumn === columnIndex) {
-                    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-                } else {
-                    this.sortColumn = columnIndex;
-                    this.sortDirection = 'asc';
-                }
-
-                this.filteredData.sort((a, b) => {
-                    const aVal = a.data[columnIndex];
-                    const bVal = b.data[columnIndex];
                     
-                    const aNum = parseFloat(aVal.replace(/[$,%]/g, ''));
-                    const bNum = parseFloat(bVal.replace(/[$,%]/g, ''));
+                    document.head.appendChild(script);
+                    const result = await loadPromise;
                     
-                    if (!isNaN(aNum) && !isNaN(bNum)) {
-                        return this.sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                    if (result === 'loaded') {
+                        log('✅ Script loaded successfully', 'pass');
                     }
-                    
-                    const comparison = aVal.localeCompare(bVal);
-                    return this.sortDirection === 'asc' ? comparison : -comparison;
-                });
-
-                this.currentPage = 1;
-                this.renderCurrentPage();
-            }
-
-            toggleRowSelection(rowId) {
-                if (this.selectedRows.has(rowId)) {
-                    this.selectedRows.delete(rowId);
-                } else {
-                    this.selectedRows.add(rowId);
-                }
-                this.renderCurrentPage();
-                this.updateStats();
-            }
-
-            filterData() {
-                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-                
-                if (searchTerm === '') {
-                    this.filteredData = [...this.currentData];
-                } else {
-                    this.filteredData = this.currentData.filter(item =>
-                        item.data.some(cell =>
-                            cell.toString().toLowerCase().includes(searchTerm)
-                        )
-                    );
-                }
-                
-                this.currentPage = 1;
-                this.renderCurrentPage();
-                this.updateStats();
-            }
-
-            renderCurrentPage() {
-                const selector = document.getElementById('datasetSelect');
-                const selectedKey = selector.value;
-                if (selectedKey && this.datasets[selectedKey]) {
-                    this.renderTable(this.datasets[selectedKey].columns);
-                }
-            }
-
-            updatePagination() {
-                const totalPages = Math.ceil(this.filteredData.length / this.rowsPerPage);
-                document.getElementById('pageInfo').textContent = `Page ${this.currentPage} of ${totalPages}`;
-            }
-
-            updateStats(datasetName = '') {
-                document.getElementById('totalRows').textContent = `${this.filteredData.length.toLocaleString()} rows`;
-                
-                const selector = document.getElementById('datasetSelect');
-                const selectedKey = selector.value;
-                const columnCount = selectedKey && this.datasets[selectedKey] ? this.datasets[selectedKey].columns.length : 0;
-                
-                document.getElementById('totalColumns').textContent = `${columnCount} columns`;
-                document.getElementById('selectedCount').textContent = `${this.selectedRows.size} selected`;
-            }
-
-            handleFileUpload(file) {
-                if (!file || !file.name.endsWith('.csv')) {
-                    alert('Please upload a CSV file.');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.parseCSV(e.target.result, file.name);
-                };
-                reader.readAsText(file);
-            }
-
-            parseCSV(csvText, fileName) {
-                const lines = csvText.split('\n').filter(line => line.trim());
-                const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-                const data = lines.slice(1).map(line => 
-                    line.split(',').map(cell => cell.replace(/"/g, '').trim())
-                );
-
-                const datasetKey = fileName.replace('.csv', '').toLowerCase().replace(/[^a-z0-9]/g, '');
-                this.datasets[datasetKey] = {
-                    name: fileName.replace('.csv', ''),
-                    columns: headers,
-                    data: data
-                };
-
-                this.loadSampleData(datasetKey);
-            }
-
-            previousPage() {
-                if (this.currentPage > 1) {
-                    this.currentPage--;
-                    this.renderCurrentPage();
-                }
-            }
-
-            nextPage() {
-                const totalPages = Math.ceil(this.filteredData.length / this.rowsPerPage);
-                if (this.currentPage < totalPages) {
-                    this.currentPage++;
-                    this.renderCurrentPage();
+                } catch (error) {
+                    log(`❌ Script failed to load: ${error}`, 'fail');
                 }
             }
         }
 
-        // Global functions
-        function loadSampleData(key) {
-            dataGrid.loadSampleData(key);
+        async function testTableauAPI() {
+            // Check if tableau object exists
+            if (typeof tableau === 'undefined') {
+                log('❌ CRITICAL: tableau object does not exist', 'fail');
+                log('🔍 This means Dashboard Extensions are definitely disabled', 'critical');
+                return false;
+            }
+
+            log('✅ tableau object exists', 'pass');
+
+            // Check if extensions property exists
+            if (!tableau.extensions) {
+                log('❌ CRITICAL: tableau.extensions does not exist', 'fail');
+                return false;
+            }
+
+            log('✅ tableau.extensions exists', 'pass');
+
+            // Try to initialize
+            try {
+                log('🔄 Attempting to initialize Extensions API...', 'info');
+                await tableau.extensions.initializeAsync();
+                log('✅ SUCCESS: Extensions API initialized!', 'pass');
+                
+                // Get dashboard info
+                const dashboard = tableau.extensions.dashboardContent.dashboard;
+                log(`Dashboard name: ${dashboard.name}`, 'info');
+                
+                const worksheets = dashboard.worksheets;
+                log(`Found ${worksheets.length} worksheets`, 'info');
+                
+                return true;
+            } catch (error) {
+                log(`❌ Extensions API initialization failed: ${error.message}`, 'fail');
+                return false;
+            }
         }
 
-        function exportData() {
-            const selector = document.getElementById('datasetSelect');
-            const selectedKey = selector.value;
-            if (!selectedKey || !dataGrid.datasets[selectedKey]) {
-                alert('Please select a dataset first.');
+        function checkConfiguration() {
+            // Check global objects
+            const globals = ['window', 'document', 'navigator', 'tableau'];
+            globals.forEach(global => {
+                const exists = typeof window[global] !== 'undefined';
+                log(`${global}: ${exists ? 'Available' : 'Missing'}`, exists ? 'pass' : 'fail');
+            });
+
+            // Check if this is likely a configuration issue
+            const inTableau = window.location.href.includes('about:srcdoc');
+            const hasTableau = typeof tableau !== 'undefined';
+            
+            if (inTableau && !hasTableau) {
+                log('🚨 DIAGNOSIS: In Tableau environment but API not injected', 'critical');
+                log('This indicates Dashboard Extensions are disabled at the server level', 'critical');
+            }
+        }
+
+        function provideRecommendations() {
+            const inTableau = window.location.href.includes('about:srcdoc');
+            const hasTableau = typeof tableau !== 'undefined';
+
+            if (!inTableau) {
+                log('📋 You are testing in a browser. Load this extension in Tableau to diagnose properly.', 'info');
                 return;
             }
 
-            const dataset = dataGrid.datasets[selectedKey];
-            let csv = dataset.columns.join(',') + '\n';
-            dataGrid.filteredData.forEach(item => {
-                csv += item.data.map(cell => `"${cell}"`).join(',') + '\n';
-            });
+            if (inTableau && !hasTableau) {
+                log('🔧 REQUIRED ACTIONS:', 'critical');
+                log('1. Contact your Tableau Cloud site administrator', 'critical');
+                log('2. Ask them to verify Dashboard Extensions are enabled for your user account', 'critical');
+                log('3. Check if there are organization-level restrictions', 'critical');
+                log('4. Ensure your site has the proper license for Extensions', 'critical');
+                log('5. Try creating a test extension with a different user account', 'critical');
+            }
 
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${selectedKey}_export.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
+            if (hasTableau) {
+                log('✅ Extensions API is working! The issue may be with your specific extension code.', 'pass');
+            }
         }
 
-        function previousPage() {
-            dataGrid.previousPage();
-        }
-
-        function nextPage() {
-            dataGrid.nextPage();
-        }
-
-        // Initialize
-        const dataGrid = new DataGridEngine();
+        // Auto-run basic diagnostic on load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                log('🔍 Auto-diagnostic on page load...', 'info');
+                const hasTableau = typeof tableau !== 'undefined';
+                const inTableau = window.location.href.includes('about:srcdoc');
+                
+                if (inTableau && hasTableau) {
+                    log('✅ Extensions appear to be working!', 'pass');
+                } else if (inTableau && !hasTableau) {
+                    log('❌ In Tableau but Extensions API not available', 'fail');
+                } else {
+                    log('⚠️ Running in browser (not Tableau)', 'warning');
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html>
