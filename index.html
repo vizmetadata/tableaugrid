@@ -5,559 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau Data Grid Extension</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 100%;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 300;
-            margin-bottom: 10px;
-        }
-        
-        .status {
-            padding: 15px 20px;
-            background: #f8f9fa;
-            border-left: 4px solid #007bff;
-            margin: 0;
-            color: #495057;
-            font-weight: 500;
-        }
-        
-        .status.loading {
-            border-color: #ffc107;
-            background: #fff3cd;
-            color: #856404;
-        }
-        
-        .status.error {
-            border-color: #dc3545;
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .status.success {
-            border-color: #28a745;
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .debug-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            padding: 15px;
-            margin: 10px 20px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            color: #495057;
-            max-height: 150px;
-            overflow-y: auto;
-        }
-        
-        .env-check {
-            background: #e3f2fd;
-            border: 1px solid #2196f3;
-            padding: 10px;
-            margin: 10px 20px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            color: #1976d2;
-        }
-        
-        .instructions {
-            background: #e7f3ff;
-            border: 2px solid #0066cc;
-            color: #004499;
-            padding: 15px;
-            margin: 10px 20px;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-        
-        .grid-container {
-            padding: 20px;
-            overflow-x: auto;
-            max-height: 60vh;
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .data-table thead {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .data-table th {
-            padding: 12px 10px;
-            text-align: left;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 11px;
-            border-right: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .data-table th:last-child {
-            border-right: none;
-        }
-        
-        .data-table td {
-            padding: 10px;
-            border-bottom: 1px solid #e9ecef;
-            border-right: 1px solid #e9ecef;
-            transition: background-color 0.2s ease;
-            font-size: 12px;
-        }
-        
-        .data-table td:last-child {
-            border-right: none;
-        }
-        
-        .data-table tbody tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        
-        .data-table tbody tr:hover {
-            background-color: #e3f2fd;
-            cursor: pointer;
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 20px;
-            background: #f8f9fa;
-            border-top: 1px solid #dee2e6;
-            font-size: 12px;
-            color: #6c757d;
-        }
-        
-        .worksheet-selector {
-            padding: 10px 20px;
-            background: #fff;
-            border-bottom: 1px solid #dee2e6;
-        }
-        
-        .worksheet-selector select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 6px;
-            font-size: 13px;
-            background: white;
-        }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 8px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .retry-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-            font-size: 12px;
-        }
-        
-        .retry-btn:hover {
-            background: #0056b3;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 100%; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; text-align: center; }
+        .status { padding: 15px 20px; background: #fff3cd; border-left: 4px solid #ffc107; color: #856404; font-weight: 500; }
+        .status.success { border-color: #28a745; background: #d4edda; color: #155724; }
+        .debug-info { background: #e3f2fd; border: 1px solid #2196f3; padding: 15px; margin: 10px 20px; border-radius: 8px; font-family: monospace; font-size: 11px; color: #1976d2; }
+        .grid-container { padding: 20px; overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .data-table thead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .data-table th { padding: 12px; text-align: left; font-weight: 600; }
+        .data-table td { padding: 10px; border-bottom: 1px solid #e9ecef; }
+        .data-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        .data-table tbody tr:hover { background-color: #e3f2fd; cursor: pointer; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>📊 Tableau Data Grid</h1>
-            <p>Professional data visualization extension</p>
+            <p>Extension loading...</p>
         </div>
         
-        <div id="status" class="status loading">
-            <span class="loading-spinner"></span>
-            Attempting to connect to Tableau...
+        <div id="status" class="status">
+            ⏳ Attempting to connect to Tableau...
         </div>
         
         <div class="debug-info">
-            <strong>🔍 Debug Log:</strong><br>
-            <div id="debug-log">Initializing extension...</div>
+            <strong>🔍 Debug Info:</strong><br>
+            <div id="debug-log">Starting up...</div>
         </div>
         
-        <div class="env-check">
-            <strong>🌐 Environment Check:</strong><br>
-            <div id="env-check">Checking Tableau environment...</div>
-        </div>
-        
-        <div class="instructions">
-            <h3>📋 Connection Status</h3>
-            <p id="connection-status">Attempting to connect to Tableau Extensions API...</p>
-        </div>
-        
-        <div id="worksheet-selector" class="worksheet-selector" style="display: none;">
-            <label for="worksheetSelect" style="display: block; margin-bottom: 6px; font-weight: 600; color: #495057; font-size: 12px;">
-                Select Worksheet:
-            </label>
-            <select id="worksheetSelect">
-                <option value="">Choose a worksheet...</option>
-            </select>
-        </div>
-        
-        <div id="grid-container" class="grid-container">
+        <div class="grid-container">
             <table class="data-table">
                 <thead>
-                    <tr>
-                        <th>Customer Segment</th>
-                        <th>Sales (USD)</th>
-                        <th>Profit (USD)</th>
-                        <th>Profit Margin</th>
-                        <th>Region</th>
-                    </tr>
+                    <tr><th>Status</th><th>Message</th></tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Consumer</td>
-                        <td>$2,297,201</td>
-                        <td>$134,119</td>
-                        <td>5.8%</td>
-                        <td>West</td>
-                    </tr>
-                    <tr>
-                        <td>Corporate</td>
-                        <td>$1,954,748</td>
-                        <td>$158,618</td>
-                        <td>8.1%</td>
-                        <td>East</td>
-                    </tr>
-                    <tr>
-                        <td>Home Office</td>
-                        <td>$1,783,627</td>
-                        <td>$166,364</td>
-                        <td>9.3%</td>
-                        <td>Central</td>
-                    </tr>
-                    <tr>
-                        <td>Small Business</td>
-                        <td>$967,582</td>
-                        <td>$95,123</td>
-                        <td>9.8%</td>
-                        <td>South</td>
-                    </tr>
+                    <tr><td>✅ Extension Loaded</td><td>Successfully running in browser</td></tr>
+                    <tr><td>⏳ Tableau API</td><td>Waiting for connection...</td></tr>
                 </tbody>
             </table>
-        </div>
-        
-        <div class="stats">
-            <span>4 rows (sample data)</span>
-            <span>5 columns</span>
-            <span>Waiting for Tableau connection</span>
-        </div>
-        
-        <div style="text-align: center; padding: 15px; background: #f8f9fa;">
-            <button class="retry-btn" onclick="attemptTableauConnection()">🔄 Retry Connection</button>
-            <button class="retry-btn" onclick="checkEnvironment()">🔍 Check Environment</button>
         </div>
     </div>
 
     <script>
-        let debugLog = [];
-        
         function log(message) {
             const timestamp = new Date().toLocaleTimeString();
-            debugLog.push(`${timestamp}: ${message}`);
-            const debugEl = document.getElementById('debug-log');
-            if (debugEl) {
-                debugEl.innerHTML = debugLog.slice(-8).join('<br>');
-                debugEl.scrollTop = debugEl.scrollHeight;
-            }
+            document.getElementById('debug-log').innerHTML += `${timestamp}: ${message}<br>`;
             console.log(message);
         }
-        
-        function updateStatus(type, message) {
-            const statusEl = document.getElementById('status');
-            statusEl.className = `status ${type}`;
-            const spinner = type === 'loading' ? '<span class="loading-spinner"></span>' : '';
-            statusEl.innerHTML = spinner + message;
-            
-            // Update connection status
-            const connectionEl = document.getElementById('connection-status');
-            if (connectionEl) {
-                connectionEl.textContent = message.replace(/[⏳✅❌🔄]/g, '').trim();
-            }
+
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
         }
-        
-        function checkEnvironment() {
-            log('🔍 Performing environment check...');
-            const envCheck = document.getElementById('env-check');
-            let envInfo = [];
-            
-            // Check for tableau object
-            const hasTableau = typeof tableau !== 'undefined';
-            const hasExtensions = hasTableau && tableau.extensions;
-            
-            envInfo.push(`tableau object: ${hasTableau ? '✅ Found' : '❌ Not found'}`);
-            envInfo.push(`tableau.extensions: ${hasExtensions ? '✅ Found' : '❌ Not found'}`);
-            
-            // Check window properties
-            envInfo.push(`Window context: ${window.parent !== window ? '✅ In iframe' : '❌ Top window'}`);
-            envInfo.push(`URL protocol: ${window.location.protocol}`);
-            envInfo.push(`URL: ${window.location.href}`);
-            
-            // Check for Tableau-specific indicators
-            const userAgent = navigator.userAgent;
-            envInfo.push(`Tableau in User Agent: ${userAgent.includes('Tableau') ? '✅ Yes' : '❌ No'}`);
-            
-            // Check if we're in the right context
-            const isTableauContext = window.location.href.includes('about:srcdoc') || 
-                                   window.location.href.includes('tableau') ||
-                                   window.self !== window.top;
-            envInfo.push(`Tableau context: ${isTableauContext ? '✅ Yes' : '❌ No'}`);
-            
-            // Check global objects
-            envInfo.push(`Global objects: window=${typeof window}, document=${typeof document}`);
-            
-            if (envCheck) {
-                envCheck.innerHTML = '<strong>🌐 Environment Check:</strong><br>' + envInfo.join('<br>');
-            }
-            
-            log(`Environment check completed. Tableau available: ${hasExtensions ? 'YES' : 'NO'}`);
-            return hasExtensions;
-        }
-        
-        async function attemptTableauConnection() {
-            log('🚀 Starting Tableau connection attempt...');
-            updateStatus('loading', '⏳ Connecting to Tableau Extensions API...');
-            
-            try {
-                // Immediate check
-                if (checkEnvironment()) {
-                    log('✅ Tableau API found immediately');
-                    await initializeTableau();
-                    return;
-                }
-                
-                // Wait for Tableau API injection
-                log('⏳ Waiting for Tableau API injection...');
-                let attempts = 0;
-                const maxAttempts = 60;
-                
-                while (attempts < maxAttempts) {
-                    if (typeof tableau !== 'undefined' && tableau.extensions) {
-                        log(`✅ Tableau API found after ${attempts} attempts`);
-                        await initializeTableau();
-                        return;
-                    }
-                    
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    attempts++;
-                    
-                    if (attempts % 10 === 0) {
-                        log(`⏳ Still waiting... attempt ${attempts}/${maxAttempts}`);
-                        checkEnvironment();
-                    }
-                }
-                
-                throw new Error('Tableau Extensions API not available after 30 seconds');
-                
-            } catch (error) {
-                log(`❌ Connection failed: ${error.message}`);
-                updateStatus('error', '❌ Cannot connect to Tableau Extensions');
-                showConnectionInstructions();
-            }
-        }
-        
-        function showConnectionInstructions() {
-            const instructions = document.querySelector('.instructions');
-            if (instructions) {
-                instructions.innerHTML = `
-                    <h3>🔧 Tableau Extensions Setup</h3>
-                    <p><strong>To enable Tableau Extensions:</strong></p>
-                    <ol style="margin: 8px 0; padding-left: 20px; font-size: 12px;">
-                        <li><strong>Tableau Desktop:</strong> Help → Settings → Manage External Service Connection → Enable "Dashboard Extensions"</li>
-                        <li><strong>Tableau Cloud:</strong> Site Settings → Extensions → Enable Dashboard Extensions</li>
-                        <li><strong>Restart</strong> Tableau and refresh this dashboard</li>
-                    </ol>
-                    <p style="font-size: 11px; color: #666;">Contact your Tableau administrator if you cannot access these settings.</p>
-                `;
-            }
-        }
-        
-        async function initializeTableau() {
-            try {
-                log('🔄 Initializing Tableau Extensions API...');
-                await tableau.extensions.initializeAsync();
-                log('✅ Tableau Extensions API initialized successfully');
-                
-                const dashboard = tableau.extensions.dashboardContent.dashboard;
-                const worksheets = dashboard.worksheets;
-                log(`📊 Found ${worksheets.length} worksheets in dashboard`);
-                
-                if (worksheets.length === 0) {
-                    updateStatus('error', '❌ No worksheets found in dashboard');
-                    log('❌ Dashboard contains no worksheets');
-                    return;
-                }
-                
-                // Populate worksheet selector
-                const select = document.getElementById('worksheetSelect');
-                select.innerHTML = '<option value="">Choose a worksheet...</option>';
-                
-                worksheets.forEach((worksheet, index) => {
-                    const option = document.createElement('option');
-                    option.value = index;
-                    option.textContent = worksheet.name;
-                    select.appendChild(option);
-                    log(`📋 Added worksheet: ${worksheet.name}`);
-                });
-                
-                document.getElementById('worksheet-selector').style.display = 'block';
-                updateStatus('success', '✅ Connected to Tableau successfully!');
-                
-                // Auto-select first worksheet
-                select.value = '0';
-                await loadWorksheetData(0);
-                
-                // Add event listener
-                select.addEventListener('change', async (e) => {
-                    if (e.target.value !== '') {
-                        await loadWorksheetData(parseInt(e.target.value));
-                    }
-                });
-                
-            } catch (error) {
-                log(`❌ Initialization failed: ${error.message}`);
-                updateStatus('error', `❌ Initialization failed: ${error.message}`);
-            }
-        }
-        
-        async function loadWorksheetData(index) {
-            try {
-                const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
-                const worksheet = worksheets[index];
-                
-                updateStatus('loading', `📥 Loading data from "${worksheet.name}"...`);
-                log(`📥 Loading data from worksheet: ${worksheet.name}`);
-                
-                const dataTable = await worksheet.getSummaryDataAsync({
-                    maxRows: 1000,
-                    includeDataValues: true
-                });
-                
-                log(`📊 Loaded ${dataTable.totalRowCount} rows, ${dataTable.columns.length} columns`);
-                
-                displayTableauData(dataTable, worksheet.name);
-                updateStatus('success', `✅ Loaded ${dataTable.totalRowCount} rows from "${worksheet.name}"`);
-                
-            } catch (error) {
-                log(`❌ Error loading data: ${error.message}`);
-                updateStatus('error', `❌ Error loading data: ${error.message}`);
-            }
-        }
-        
-        function displayTableauData(dataTable, worksheetName) {
-            const container = document.getElementById('grid-container');
-            
-            if (dataTable.totalRowCount === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 30px; color: #666;"><h3>No Data Available</h3><p>The selected worksheet contains no data</p></div>';
-                return;
-            }
-            
-            let html = '<table class="data-table"><thead><tr>';
-            
-            dataTable.columns.forEach(col => {
-                html += `<th title="Type: ${col.dataType}">${col.fieldName}</th>`;
-            });
-            html += '</tr></thead><tbody>';
-            
-            dataTable.data.forEach((row, rowIndex) => {
-                html += `<tr data-row="${rowIndex}">`;
-                row.forEach(cell => {
-                    const cellValue = cell.formattedValue || cell.value || '';
-                    html += `<td title="${cellValue}">${cellValue}</td>`;
-                });
-                html += '</tr>';
-            });
-            
-            html += '</tbody></table>';
-            container.innerHTML = html;
-            
-            document.querySelector('.stats').innerHTML = `
-                <span>${dataTable.totalRowCount.toLocaleString()} rows</span>
-                <span>${dataTable.columns.length} columns</span>
-                <span>From "${worksheetName}"</span>
-            `;
-            
-            log(`✅ Successfully displayed ${dataTable.totalRowCount} rows from ${worksheetName}`);
-        }
-        
-        // Initialize on page load
+
+        // Simple connection attempt
         document.addEventListener('DOMContentLoaded', function() {
-            log('🏁 Extension loaded');
+            log('🏁 Extension started');
             log(`🌐 URL: ${window.location.href}`);
-            log(`📱 Iframe: ${window.self !== window.top ? 'Yes' : 'No'}`);
+            log(`📱 In iframe: ${window.self !== window.top ? 'Yes' : 'No'}`);
             
-            // Initial environment check
-            setTimeout(() => {
-                checkEnvironment();
-                attemptTableauConnection();
-            }, 1000);
-        });
-        
-        // Add table row interactions
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('tbody tr')) {
-                document.querySelectorAll('tbody tr').forEach(row => {
-                    row.style.backgroundColor = '';
-                });
-                e.target.closest('tr').style.backgroundColor = '#bbdefb';
-            }
+            setTimeout(function() {
+                if (typeof tableau !== 'undefined' && tableau.extensions) {
+                    log('✅ Tableau API found!');
+                    updateStatus('✅ Connected to Tableau successfully!');
+                    
+                    tableau.extensions.initializeAsync().then(function() {
+                        const worksheets = tableau.extensions.dashboardContent.dashboard.worksheets;
+                        log(`📊 Found ${worksheets.length} worksheets`);
+                        updateStatus(`✅ Ready! Found ${worksheets.length} worksheets`);
+                    });
+                } else {
+                    log('❌ Tableau API not available');
+                    updateStatus('❌ Extensions may be disabled in Tableau');
+                }
+            }, 2000);
         });
     </script>
 </body>
