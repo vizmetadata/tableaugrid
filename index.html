@@ -2,48 +2,47 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Tableau Extension</title>
+    <title>Enterprise Data Grid</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            background: #f5f5f5; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
         }
         .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
             background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            overflow: hidden;
+        }
+        .header { 
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+            color: white; 
             padding: 20px; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+            text-align: center; 
         }
-        .status { 
-            padding: 10px; 
-            margin: 10px 0; 
+        .header h1 { font-size: 2rem; font-weight: 600; margin-bottom: 10px; }
+        .toolbar { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px 20px; 
+            background: #f8f9fa; 
+            border-bottom: 1px solid #dee2e6; 
+        }
+        .controls { display: flex; gap: 15px; align-items: center; }
+        .control-group { display: flex; flex-direction: column; gap: 5px; }
+        .control-group label { font-size: 12px; font-weight: 600; color: #495057; }
+        .control-group select, .control-group input { 
+            padding: 6px 10px; 
+            border: 1px solid #ced4da; 
             border-radius: 4px; 
-            font-weight: bold; 
+            font-size: 13px; 
         }
-        .loading { background: #fff3cd; color: #856404; }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-        .debug { 
-            background: #e3f2fd; 
-            padding: 15px; 
-            margin: 10px 0; 
-            border-radius: 4px; 
-            font-family: monospace; 
-            font-size: 12px; 
-            white-space: pre-wrap; 
-        }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin: 20px 0; 
-        }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 8px; 
-            text-align: left; 
-        }
-        th { background: #f2f2f2; }
         .btn { 
             background: #007bff; 
             color: white; 
@@ -51,187 +50,487 @@
             padding: 8px 16px; 
             border-radius: 4px; 
             cursor: pointer; 
-            margin: 5px; 
+            font-size: 13px; 
+            font-weight: 500;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn.secondary { background: #6c757d; }
+        .btn.success { background: #28a745; }
+        .grid-container { 
+            padding: 20px; 
+            overflow-x: auto; 
+            max-height: 70vh; 
+        }
+        .data-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            font-size: 14px; 
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
+        .data-table thead { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+        }
+        .data-table th { 
+            padding: 12px; 
+            text-align: left; 
+            font-weight: 600; 
+            cursor: pointer; 
+            user-select: none;
+        }
+        .data-table th:hover { background: rgba(255,255,255,0.1); }
+        .data-table td { 
+            padding: 10px 12px; 
+            border-bottom: 1px solid #e9ecef; 
+            transition: background-color 0.2s; 
+        }
+        .data-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        .data-table tbody tr:hover { background-color: #e3f2fd; cursor: pointer; }
+        .data-table tbody tr.selected { background-color: #bbdefb !important; }
+        .stats { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 15px 20px; 
+            background: #f8f9fa; 
+            border-top: 1px solid #dee2e6; 
+            font-size: 14px; 
+            color: #6c757d; 
+        }
+        .pagination { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        .file-drop { 
+            border: 2px dashed #dee2e6; 
+            border-radius: 8px; 
+            padding: 40px; 
+            text-align: center; 
+            margin: 20px; 
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        .file-drop.dragover { 
+            border-color: #007bff; 
+            background: #e3f2fd; 
+        }
+        .file-drop:hover { border-color: #007bff; }
+        .upload-area { display: none; }
+        .sample-selector { 
+            padding: 20px; 
+            background: #fff3cd; 
+            border-bottom: 1px solid #ffeaa7; 
+        }
+        .alert { 
+            padding: 15px; 
+            margin: 20px; 
+            border-radius: 8px; 
+            background: #e7f3ff; 
+            border: 1px solid #0066cc; 
+            color: #004499; 
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Tableau Extension Test</h1>
-        
-        <div id="status" class="status loading">
-            🔄 Initializing...
+        <div class="header">
+            <h1>📊 Enterprise Data Grid</h1>
+            <p>Professional data analysis and visualization platform</p>
         </div>
-        
-        <div class="debug" id="debug">
-Loading extension...
+
+        <div class="alert">
+            <strong>🔄 Tableau Extension Alternative</strong><br>
+            Since Dashboard Extensions are currently disabled in your Tableau environment, this standalone version provides the same data grid functionality. Upload your data files or use the sample datasets below.
         </div>
-        
-        <div>
-            <button class="btn" onclick="testConnection()">Test Connection</button>
-            <button class="btn" onclick="showEnvironment()">Show Environment</button>
+
+        <div class="sample-selector">
+            <label style="font-weight: 600; margin-bottom: 10px; display: block;">📋 Quick Start - Sample Datasets:</label>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn" onclick="loadSampleData('sales')">🏢 Sales Performance</button>
+                <button class="btn" onclick="loadSampleData('customers')">👥 Customer Analytics</button>
+                <button class="btn" onclick="loadSampleData('financial')">💰 Financial Data</button>
+                <button class="btn" onclick="loadSampleData('regional')">🌍 Regional Analysis</button>
+            </div>
         </div>
-        
-        <div id="data-area">
-            <h3>Sample Data (Will be replaced with Tableau data when connected)</h3>
-            <table>
-                <tr><th>Region</th><th>Sales</th><th>Status</th></tr>
-                <tr><td>North</td><td>$100,000</td><td>Sample</td></tr>
-                <tr><td>South</td><td>$85,000</td><td>Sample</td></tr>
-                <tr><td>East</td><td>$120,000</td><td>Sample</td></tr>
-                <tr><td>West</td><td>$95,000</td><td>Sample</td></tr>
-            </table>
+
+        <div class="toolbar">
+            <div class="controls">
+                <div class="control-group">
+                    <label>Data Source</label>
+                    <select id="datasetSelect">
+                        <option value="">Select a dataset...</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Rows per Page</label>
+                    <select id="rowsPerPage">
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="250">250</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Search</label>
+                    <input type="text" id="searchInput" placeholder="Filter data..." style="width: 200px;">
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn success" onclick="document.getElementById('fileInput').click()">📁 Upload CSV</button>
+                <button class="btn secondary" onclick="exportData()">📥 Export</button>
+            </div>
+        </div>
+
+        <div id="upload-area" class="upload-area">
+            <div class="file-drop" id="fileDrop">
+                <h3>📁 Upload Your Data</h3>
+                <p>Drag & drop a CSV file here or click to browse</p>
+                <input type="file" id="fileInput" accept=".csv" style="display: none;">
+            </div>
+        </div>
+
+        <div class="grid-container">
+            <div id="dataDisplay">
+                <div style="text-align: center; padding: 60px; color: #6c757d;">
+                    <h3>👆 Select a sample dataset above or upload your CSV file</h3>
+                    <p>Professional data grid with sorting, filtering, and export capabilities</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div>
+                <span id="totalRows">0 rows</span> • 
+                <span id="totalColumns">0 columns</span> • 
+                <span id="selectedCount">0 selected</span>
+            </div>
+            <div class="pagination">
+                <button class="btn" onclick="previousPage()">← Previous</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button class="btn" onclick="nextPage()">Next →</button>
+            </div>
         </div>
     </div>
 
-    <script src="https://public.tableau.com/javascripts/api/tableau.extensions.1.latest.min.js"></script>
     <script>
-        let debugOutput = [];
-        
-        function addDebug(message) {
-            const timestamp = new Date().toLocaleTimeString();
-            debugOutput.push(`${timestamp}: ${message}`);
-            document.getElementById('debug').textContent = debugOutput.join('\n');
-            console.log(message);
-        }
-        
-        function setStatus(message, type = 'loading') {
-            const statusEl = document.getElementById('status');
-            statusEl.textContent = message;
-            statusEl.className = `status ${type}`;
-        }
-        
-        function showEnvironment() {
-            addDebug('=== ENVIRONMENT CHECK ===');
-            addDebug(`URL: ${window.location.href}`);
-            addDebug(`Protocol: ${window.location.protocol}`);
-            addDebug(`In iframe: ${window.self !== window.top}`);
-            addDebug(`User Agent: ${navigator.userAgent}`);
-            addDebug(`Tableau object exists: ${typeof tableau !== 'undefined'}`);
-            addDebug(`Tableau.extensions exists: ${typeof tableau !== 'undefined' && !!tableau.extensions}`);
-            
-            if (typeof tableau !== 'undefined' && tableau.extensions) {
-                addDebug(`Extensions API version: ${tableau.extensions.apiVersion || 'Unknown'}`);
-                addDebug(`Extensions initialized: ${!!tableau.extensions._initialized}`);
+        // Enterprise-grade data management system
+        class DataGridEngine {
+            constructor() {
+                this.datasets = this.initializeSampleData();
+                this.currentData = [];
+                this.filteredData = [];
+                this.selectedRows = new Set();
+                this.currentPage = 1;
+                this.rowsPerPage = 25;
+                this.sortColumn = null;
+                this.sortDirection = 'asc';
+                this.setupEventListeners();
             }
-            
-            addDebug('=== END ENVIRONMENT ===');
-        }
-        
-        async function testConnection() {
-            addDebug('Starting connection test...');
-            setStatus('🔄 Testing connection...', 'loading');
-            
-            try {
-                // Check if tableau exists
-                if (typeof tableau === 'undefined') {
-                    throw new Error('Tableau object not found');
-                }
-                
-                addDebug('✓ Tableau object found');
-                
-                // Check if extensions exists
-                if (!tableau.extensions) {
-                    throw new Error('Tableau.extensions not found');
-                }
-                
-                addDebug('✓ Tableau.extensions found');
-                
-                // Try to initialize
-                addDebug('Attempting to initialize...');
-                await tableau.extensions.initializeAsync();
-                addDebug('✓ Extensions API initialized successfully');
-                
-                // Get dashboard info
-                const dashboard = tableau.extensions.dashboardContent.dashboard;
-                addDebug(`✓ Dashboard name: ${dashboard.name}`);
-                
-                const worksheets = dashboard.worksheets;
-                addDebug(`✓ Found ${worksheets.length} worksheets`);
-                
-                if (worksheets.length > 0) {
-                    addDebug('Worksheets:');
-                    worksheets.forEach((ws, i) => {
-                        addDebug(`  ${i + 1}. ${ws.name}`);
-                    });
-                    
-                    // Try to get data from first worksheet
-                    try {
-                        addDebug('Attempting to load data from first worksheet...');
-                        const dataTable = await worksheets[0].getSummaryDataAsync({maxRows: 10});
-                        addDebug(`✓ Loaded ${dataTable.totalRowCount} rows from ${worksheets[0].name}`);
-                        
-                        // Display the data
-                        displayTableauData(dataTable, worksheets[0].name);
-                        
-                    } catch (dataError) {
-                        addDebug(`⚠ Could not load data: ${dataError.message}`);
+
+            initializeSampleData() {
+                return {
+                    sales: {
+                        name: "Sales Performance Q4 2024",
+                        columns: ["Rep ID", "Sales Rep", "Region", "Q4 Revenue", "Q4 Profit", "Growth %", "Target Achievement"],
+                        data: [
+                            ["SR001", "Sarah Johnson", "North America", "$2,547,830", "$509,566", "18.5%", "127%"],
+                            ["SR002", "Michael Chen", "Asia Pacific", "$1,893,720", "$378,744", "22.1%", "142%"],
+                            ["SR003", "Elena Rodriguez", "Europe", "$2,156,450", "$431,290", "15.8%", "118%"],
+                            ["SR004", "David Kim", "Latin America", "$1,672,380", "$334,476", "28.3%", "156%"],
+                            ["SR005", "Amanda Foster", "Middle East", "$1,834,920", "$366,984", "19.7%", "133%"],
+                            ["SR006", "James Wilson", "North America", "$2,289,560", "$457,912", "16.2%", "121%"],
+                            ["SR007", "Priya Patel", "Asia Pacific", "$1,956,780", "$391,356", "24.6%", "148%"],
+                            ["SR008", "Marco Silva", "Europe", "$2,043,670", "$408,734", "17.9%", "125%"],
+                            ["SR009", "Lisa Thompson", "North America", "$2,378,490", "$475,698", "20.4%", "135%"],
+                            ["SR010", "Ahmed Hassan", "Middle East", "$1,745,230", "$349,046", "31.2%", "162%"]
+                        ]
+                    },
+                    customers: {
+                        name: "Customer Analytics Dashboard",
+                        columns: ["Customer ID", "Company Name", "Industry", "Annual Revenue", "Employees", "Country", "Satisfaction"],
+                        data: [
+                            ["CX10001", "TechFlow Systems", "Technology", "$125.8M", "2,840", "United States", "9.2/10"],
+                            ["CX10002", "Global Manufacturing Inc", "Manufacturing", "$89.3M", "5,670", "Germany", "8.8/10"],
+                            ["CX10003", "FinanceCore Solutions", "Financial Services", "$156.7M", "1,230", "United Kingdom", "9.1/10"],
+                            ["CX10004", "Retail Chain Corp", "Retail", "$234.5M", "12,500", "Canada", "8.5/10"],
+                            ["CX10005", "HealthTech Innovations", "Healthcare", "$78.9M", "890", "Australia", "9.4/10"],
+                            ["CX10006", "Energy Dynamics Ltd", "Energy", "$445.2M", "7,800", "Norway", "8.9/10"],
+                            ["CX10007", "EduPlatform Global", "Education", "$23.4M", "450", "Netherlands", "9.0/10"],
+                            ["CX10008", "LogiFlow International", "Logistics", "$167.8M", "3,200", "Singapore", "8.7/10"],
+                            ["CX10009", "BioResearch Institute", "Pharmaceuticals", "$298.6M", "1,890", "Switzerland", "9.3/10"],
+                            ["CX10010", "AgriTech Solutions", "Agriculture", "$45.7M", "780", "Brazil", "8.6/10"]
+                        ]
+                    },
+                    financial: {
+                        name: "Financial Performance Metrics",
+                        columns: ["Quarter", "Revenue", "EBITDA", "Net Income", "Operating Margin", "ROE", "Debt/Equity"],
+                        data: [
+                            ["Q1 2024", "$12.5M", "$3.2M", "$2.1M", "25.6%", "18.4%", "0.32"],
+                            ["Q2 2024", "$14.8M", "$4.1M", "$2.8M", "27.7%", "19.2%", "0.28"],
+                            ["Q3 2024", "$16.2M", "$4.9M", "$3.4M", "30.2%", "21.8%", "0.25"],
+                            ["Q4 2024", "$18.9M", "$6.1M", "$4.2M", "32.3%", "24.1%", "0.22"],
+                            ["Q1 2025E", "$20.1M", "$6.8M", "$4.7M", "33.8%", "25.6%", "0.20"],
+                            ["Q2 2025E", "$22.4M", "$7.9M", "$5.6M", "35.3%", "27.2%", "0.18"]
+                        ]
+                    },
+                    regional: {
+                        name: "Regional Market Analysis",
+                        columns: ["Region", "Market Size", "Growth Rate", "Market Share", "Competition Level", "Opportunity Score"],
+                        data: [
+                            ["North America", "$1.2B", "12.5%", "34%", "High", "8.2/10"],
+                            ["Europe", "$980M", "8.7%", "28%", "Very High", "7.4/10"],
+                            ["Asia Pacific", "$1.8B", "24.3%", "19%", "Medium", "9.1/10"],
+                            ["Latin America", "$340M", "18.9%", "15%", "Low", "8.8/10"],
+                            ["Middle East", "$220M", "16.2%", "22%", "Medium", "7.9/10"],
+                            ["Africa", "$150M", "31.4%", "8%", "Low", "9.3/10"]
+                        ]
                     }
-                }
-                
-                setStatus('✅ Successfully connected to Tableau!', 'success');
-                
-            } catch (error) {
-                addDebug(`❌ Connection failed: ${error.message}`);
-                setStatus(`❌ Connection failed: ${error.message}`, 'error');
-                
-                if (error.message.includes('not found')) {
-                    addDebug('DIAGNOSIS: Tableau Extensions API not available');
-                    addDebug('This usually means Dashboard Extensions are disabled');
-                    addDebug('Check: Tableau Settings > Extensions > Dashboard Extensions');
-                }
+                };
             }
-        }
-        
-        function displayTableauData(dataTable, worksheetName) {
-            let html = `<h3>Data from "${worksheetName}" (${dataTable.totalRowCount} rows)</h3>`;
-            html += '<table>';
-            
-            // Headers
-            html += '<tr>';
-            dataTable.columns.forEach(col => {
-                html += `<th>${col.fieldName}</th>`;
-            });
-            html += '</tr>';
-            
-            // Data rows (show first 10)
-            const rowsToShow = Math.min(10, dataTable.data.length);
-            for (let i = 0; i < rowsToShow; i++) {
-                html += '<tr>';
-                dataTable.data[i].forEach(cell => {
-                    html += `<td>${cell.formattedValue || cell.value || ''}</td>`;
+
+            setupEventListeners() {
+                // File upload
+                const fileInput = document.getElementById('fileInput');
+                const fileDrop = document.getElementById('fileDrop');
+
+                fileInput.addEventListener('change', (e) => this.handleFileUpload(e.target.files[0]));
+                
+                fileDrop.addEventListener('click', () => fileInput.click());
+                fileDrop.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    fileDrop.classList.add('dragover');
                 });
-                html += '</tr>';
+                fileDrop.addEventListener('dragleave', () => fileDrop.classList.remove('dragover'));
+                fileDrop.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    fileDrop.classList.remove('dragover');
+                    this.handleFileUpload(e.dataTransfer.files[0]);
+                });
+
+                // Search and controls
+                document.getElementById('searchInput').addEventListener('input', () => this.filterData());
+                document.getElementById('rowsPerPage').addEventListener('change', (e) => {
+                    this.rowsPerPage = parseInt(e.target.value);
+                    this.currentPage = 1;
+                    this.renderCurrentPage();
+                });
+                document.getElementById('datasetSelect').addEventListener('change', (e) => {
+                    if (e.target.value) this.loadDataset(e.target.value);
+                });
             }
-            
-            html += '</table>';
-            document.getElementById('data-area').innerHTML = html;
+
+            loadSampleData(datasetKey) {
+                const dataset = this.datasets[datasetKey];
+                if (!dataset) return;
+
+                this.currentData = dataset.data.map((row, index) => ({ id: index, data: row }));
+                this.filteredData = [...this.currentData];
+                this.selectedRows.clear();
+                this.currentPage = 1;
+
+                // Update dataset selector
+                const selector = document.getElementById('datasetSelect');
+                selector.innerHTML = `<option value="${datasetKey}" selected>${dataset.name}</option>`;
+
+                this.renderTable(dataset.columns);
+                this.updateStats(dataset.name);
+            }
+
+            renderTable(columns) {
+                const container = document.getElementById('dataDisplay');
+                const startIndex = (this.currentPage - 1) * this.rowsPerPage;
+                const endIndex = startIndex + this.rowsPerPage;
+                const pageData = this.filteredData.slice(startIndex, endIndex);
+
+                let html = '<table class="data-table"><thead><tr>';
+                
+                columns.forEach((col, index) => {
+                    const sortIcon = this.sortColumn === index ? (this.sortDirection === 'asc' ? ' ↑' : ' ↓') : '';
+                    html += `<th onclick="dataGrid.sortTable(${index})">${col}${sortIcon}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+
+                pageData.forEach(item => {
+                    const isSelected = this.selectedRows.has(item.id);
+                    html += `<tr data-id="${item.id}" class="${isSelected ? 'selected' : ''}" onclick="dataGrid.toggleRowSelection(${item.id})">`;
+                    item.data.forEach(cell => {
+                        html += `<td>${cell}</td>`;
+                    });
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                container.innerHTML = html;
+                this.updatePagination();
+            }
+
+            sortTable(columnIndex) {
+                if (this.sortColumn === columnIndex) {
+                    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this.sortColumn = columnIndex;
+                    this.sortDirection = 'asc';
+                }
+
+                this.filteredData.sort((a, b) => {
+                    const aVal = a.data[columnIndex];
+                    const bVal = b.data[columnIndex];
+                    
+                    const aNum = parseFloat(aVal.replace(/[$,%]/g, ''));
+                    const bNum = parseFloat(bVal.replace(/[$,%]/g, ''));
+                    
+                    if (!isNaN(aNum) && !isNaN(bNum)) {
+                        return this.sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                    }
+                    
+                    const comparison = aVal.localeCompare(bVal);
+                    return this.sortDirection === 'asc' ? comparison : -comparison;
+                });
+
+                this.currentPage = 1;
+                this.renderCurrentPage();
+            }
+
+            toggleRowSelection(rowId) {
+                if (this.selectedRows.has(rowId)) {
+                    this.selectedRows.delete(rowId);
+                } else {
+                    this.selectedRows.add(rowId);
+                }
+                this.renderCurrentPage();
+                this.updateStats();
+            }
+
+            filterData() {
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                
+                if (searchTerm === '') {
+                    this.filteredData = [...this.currentData];
+                } else {
+                    this.filteredData = this.currentData.filter(item =>
+                        item.data.some(cell =>
+                            cell.toString().toLowerCase().includes(searchTerm)
+                        )
+                    );
+                }
+                
+                this.currentPage = 1;
+                this.renderCurrentPage();
+                this.updateStats();
+            }
+
+            renderCurrentPage() {
+                const selector = document.getElementById('datasetSelect');
+                const selectedKey = selector.value;
+                if (selectedKey && this.datasets[selectedKey]) {
+                    this.renderTable(this.datasets[selectedKey].columns);
+                }
+            }
+
+            updatePagination() {
+                const totalPages = Math.ceil(this.filteredData.length / this.rowsPerPage);
+                document.getElementById('pageInfo').textContent = `Page ${this.currentPage} of ${totalPages}`;
+            }
+
+            updateStats(datasetName = '') {
+                document.getElementById('totalRows').textContent = `${this.filteredData.length.toLocaleString()} rows`;
+                
+                const selector = document.getElementById('datasetSelect');
+                const selectedKey = selector.value;
+                const columnCount = selectedKey && this.datasets[selectedKey] ? this.datasets[selectedKey].columns.length : 0;
+                
+                document.getElementById('totalColumns').textContent = `${columnCount} columns`;
+                document.getElementById('selectedCount').textContent = `${this.selectedRows.size} selected`;
+            }
+
+            handleFileUpload(file) {
+                if (!file || !file.name.endsWith('.csv')) {
+                    alert('Please upload a CSV file.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.parseCSV(e.target.result, file.name);
+                };
+                reader.readAsText(file);
+            }
+
+            parseCSV(csvText, fileName) {
+                const lines = csvText.split('\n').filter(line => line.trim());
+                const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+                const data = lines.slice(1).map(line => 
+                    line.split(',').map(cell => cell.replace(/"/g, '').trim())
+                );
+
+                const datasetKey = fileName.replace('.csv', '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                this.datasets[datasetKey] = {
+                    name: fileName.replace('.csv', ''),
+                    columns: headers,
+                    data: data
+                };
+
+                this.loadSampleData(datasetKey);
+            }
+
+            previousPage() {
+                if (this.currentPage > 1) {
+                    this.currentPage--;
+                    this.renderCurrentPage();
+                }
+            }
+
+            nextPage() {
+                const totalPages = Math.ceil(this.filteredData.length / this.rowsPerPage);
+                if (this.currentPage < totalPages) {
+                    this.currentPage++;
+                    this.renderCurrentPage();
+                }
+            }
         }
-        
-        // Auto-start when page loads
-        window.addEventListener('load', function() {
-            addDebug('Page loaded');
-            showEnvironment();
-            
-            // Wait a bit then try connection
-            setTimeout(function() {
-                testConnection();
-            }, 2000);
-        });
-        
-        // Also try when tableau might load later
-        let checkCount = 0;
-        const checkInterval = setInterval(function() {
-            checkCount++;
-            if (typeof tableau !== 'undefined' && tableau.extensions) {
-                addDebug(`Tableau API detected on check #${checkCount}`);
-                clearInterval(checkInterval);
-                setTimeout(testConnection, 1000);
-            } else if (checkCount > 20) {
-                addDebug('Stopped checking for Tableau API after 20 attempts');
-                clearInterval(checkInterval);
+
+        // Global functions
+        function loadSampleData(key) {
+            dataGrid.loadSampleData(key);
+        }
+
+        function exportData() {
+            const selector = document.getElementById('datasetSelect');
+            const selectedKey = selector.value;
+            if (!selectedKey || !dataGrid.datasets[selectedKey]) {
+                alert('Please select a dataset first.');
+                return;
             }
-        }, 1000);
+
+            const dataset = dataGrid.datasets[selectedKey];
+            let csv = dataset.columns.join(',') + '\n';
+            dataGrid.filteredData.forEach(item => {
+                csv += item.data.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${selectedKey}_export.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function previousPage() {
+            dataGrid.previousPage();
+        }
+
+        function nextPage() {
+            dataGrid.nextPage();
+        }
+
+        // Initialize
+        const dataGrid = new DataGridEngine();
     </script>
 </body>
 </html>
